@@ -1,0 +1,4 @@
+divante_graph_ql:
+    resource: "@DivanteGraphQlBundle/Controller/"
+    type:     annotation
+    prefix:   /webservice/graphql

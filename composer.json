@@ -1,0 +1,40 @@
+{
+  "name": "divanteltd/pimcore-graphql",
+  "type": "pimcore-bundle",
+  "description": "Graphql Bundle for Pimcore 5. Adding possibility to manipulate DataObject through graphQl.",
+  "keywords": [
+    "pimcore",
+    "graphql",
+    "bundle"
+  ],
+  "license": "GPL-3.0+",
+  "authors": [
+    {
+      "name": "DivanteLtd",
+      "email":  "pimcore@divante.pl",
+      "homepage": "http://divante.co"
+    },
+    {
+      "name": "Kamil Janik",
+      "email": "kjanik@divante.co",
+      "role": "PHP Developer"
+    }
+  ],
+  "require": {
+    "php": ">=7.0",
+    "pimcore/core-version": "^5.1.0",
+    "webonyx/graphql-php": "^0.11.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "Divante\\GraphQlBundle\\": "src/"
+    }
+  },
+  "extra": {
+    "pimcore": {
+      "bundles": [
+        "Divante\\GraphQlBundle\\DivanteGraphQlBundle"
+      ]
+    }
+  }
+}
