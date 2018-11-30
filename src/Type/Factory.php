@@ -111,20 +111,22 @@ class Factory
      */
     private function getConfig(string $className)
     {
-
+        $definition = ClassDefinition::getByName($className);
         $this->typeList->$className = true;
-        $this->typeList->$className = new ObjectType([
-            'name' => $className,
-            'fields' => function () use ($className) {
-                return $this->getFieldsDefinition($className);
-            },
-            'resolveField' => function ($value, $args, $context, ResolveInfo $info) {
-                return $this->dataProvider->getResolveFunction($value, $info->fieldName);
-            }
-        ]);
-
-
-        return $this->typeList->$className;
+        if ($definition instanceof ClassDefinition) {
+            $this->typeList->$className = new ObjectType([
+                'name' => $className,
+                'fields' => function () use ($className) {
+                    return $this->getFieldsDefinition($className);
+                },
+                'resolveField' => function ($value, $args, $context, ResolveInfo $info) {
+                    return $this->dataProvider->getResolveFunction($value, $info->fieldName);
+                }
+            ]);
+            return $this->typeList->$className;
+        } else {
+            return Type::int();
+        }
     }
 
 
@@ -138,15 +140,28 @@ class Factory
         $def["id"] = Type::int();
         foreach ($definition->getFieldDefinitions() as $item) {
             if ($item->getName() == "localizedfields") {
-                foreach ($item->getChilds() as $child) {
-                    $def[$child->getName()] = $this->getLocalizedFieldType($child);
-                }
+                $this->parseLocalizedfields($item, $def);
             } else {
                 $def[$item->getName()] = $this->getFieldType($item);
             }
         }
 
         return $def;
+    }
+
+    /**
+     * @param $item
+     * @param array $def
+     */
+    private function parseLocalizedfields($item, &$def)
+    {
+        foreach ($item->getChilds() as $child) {
+            if (!$child instanceof  ClassDefinition\Data) {
+                $this->parseLocalizedfields($child, $def);
+            } else {
+                $def[$child->getName()] = $this->getLocalizedFieldType($child);
+            }
+        }
     }
 
     /**
@@ -197,7 +212,7 @@ class Factory
      * @param ClassDefinition\Data $fieldDefinition
      * @return array
      */
-    private function getLocalizedFieldType(ClassDefinition\Data $fieldDefinition)
+    private function getLocalizedFieldType($fieldDefinition)
     {
         return [
             "type" => $this->fieldTypeMapper->getSimpleType($fieldDefinition),
