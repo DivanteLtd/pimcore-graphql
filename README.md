@@ -23,7 +23,7 @@ composer require divanteltd/pimcore-graphql
 On Pimcore level - You need to create rest user, and generate API key, which will be used for graphql communication.
 Set up default localisation for site, in Pimcore settings.
 
-![](gql.gif)
+![](graphql.gif)
 
 ## Developing
 ... to be done ..
