@@ -117,6 +117,16 @@ class FieldType
 
     /**
      * @param Data $fieldDefinition
+     * @return bool
+     */
+    public function isScalarType(Data $fieldDefinition)
+    {
+        $typeName = $fieldDefinition->getPhpdocType();
+        return in_array($typeName, ["string","boolean","float","int"]);
+    }
+
+    /**
+     * @param Data $fieldDefinition
      * @return \GraphQL\Type\Definition\IntType|mixed
      */
     private function getCustomType(Data $fieldDefinition)

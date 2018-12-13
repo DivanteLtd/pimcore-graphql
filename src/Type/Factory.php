@@ -72,7 +72,7 @@ class Factory
                     function ($carry, $item) {
                         $carry[$item] = [
                             'type' => Type::listOf($this->getConfig($item)),
-                            'args' => [
+                            'args' => array_merge($this->getFilters($item), [
                                 "id" => Type::int(),
                                 'language' => [
                                     'type' => Type::string(),
@@ -88,7 +88,7 @@ class Factory
                                 'offset' => [
                                     'type' => Type::int()
                                 ]
-                            ]
+                            ])
                         ];
                         return $carry;
                     }
@@ -103,7 +103,24 @@ class Factory
         ]);
     }
 
+    /**
+     * @param string $className
+     * @return array
+     */
+    private function getFilters(string $className)
+    {
+        $result = [];
+        $definition = ClassDefinition::getByName($className);
+        if ($definition instanceof ClassDefinition) {
+            foreach ($definition->getFieldDefinitions() as $item) {
+                if ($this->fieldTypeMapper->isScalarType($item)) {
+                    $result[$item->getName()] = $this->fieldTypeMapper->getSimpleType($item);
+                }
+            }
+        }
 
+        return $result;
+    }
 
     /**
      * @param string $className

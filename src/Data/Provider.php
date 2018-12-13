@@ -72,10 +72,16 @@ class Provider
             $list = new $name();
             $list->setUnpublished($this->unpublished);
 
+            foreach ($args as $name => $value) {
+                if (!in_array($name, ['id', 'offset', 'limit', 'language', 'unpublished'])) {
+                    $list->addConditionParam($name . " = ?", $value);
+                }
+            }
+
             if (isset($args["limit"]) && isset($args["offset"])) {
                 $collection = $list->getItems($args["offset"], $args["limit"]);
             } else {
-                $collection = $list->getObjects();
+                $collection = $list->getObjects() ?? [];
             }
 
             return $collection;
