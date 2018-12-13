@@ -96,10 +96,32 @@ class Provider
      * @param $fieldName
      * @return mixed
      */
-    public function getResolveFunction($object, $fieldName)
+    public function getResolveFunction($object, $fieldName, $args = [])
     {
         $getter = "get" . ucfirst($fieldName);
-        return $object->$getter();
+        $result = $object->$getter();
+        $filter = function ($item) use ($args) {
+            foreach ($args as $name => $value) {
+                $getter = "get" . ucfirst($name);
+                if ($item->$getter() != $value) {
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        if (!empty($args)) {
+            if (is_array($result)) {
+                $result = array_filter(
+                    $result,
+                    $filter
+                );
+            } elseif (!$filter($result)) {
+                $result = null;
+            }
+        }
+
+        return $result;
     }
 
     /**

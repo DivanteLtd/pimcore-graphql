@@ -137,7 +137,7 @@ class Factory
                     return $this->getFieldsDefinition($className);
                 },
                 'resolveField' => function ($value, $args, $context, ResolveInfo $info) {
-                    return $this->dataProvider->getResolveFunction($value, $info->fieldName);
+                    return $this->dataProvider->getResolveFunction($value, $info->fieldName, $args);
                 }
             ]);
             return $this->typeList->$className;
@@ -219,7 +219,10 @@ class Factory
         }
 
         if ($this->fieldTypeMapper->isCollectionReferenceType($fieldDefinition)) {
-            return $type ? Type::listOf($type) : [];
+            return [
+                'type' => Type::listOf($type),
+                'args' => $this->getFilters($className)
+            ];
         } else {
             return $type;
         }
