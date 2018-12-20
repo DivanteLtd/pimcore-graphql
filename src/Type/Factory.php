@@ -113,7 +113,13 @@ class Factory
         $definition = ClassDefinition::getByName($className);
         if ($definition instanceof ClassDefinition) {
             foreach ($definition->getFieldDefinitions() as $item) {
-                if ($this->fieldTypeMapper->isScalarType($item)) {
+                if ($item->getName() == "localizedfields") {
+                    foreach ($item->getChilds() as $child) {
+                        if ($child instanceof  ClassDefinition\Data) {
+                            $result[$child->getName()] = $this->fieldTypeMapper->getSimpleType($child);
+                        }
+                    }
+                } elseif ($this->fieldTypeMapper->isScalarType($item)) {
                     $result[$item->getName()] = $this->fieldTypeMapper->getSimpleType($item);
                 }
             }
