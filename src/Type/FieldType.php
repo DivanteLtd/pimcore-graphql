@@ -44,7 +44,10 @@ class FieldType
      */
     public function isReferenceType(Data $fieldDefinition)
     {
-        return in_array($fieldDefinition->getFieldtype(), ["objects","href"]);
+        return in_array(
+            $fieldDefinition->getFieldtype(),
+            ["objects","manyToManyObjectRelation", "href", "manyToOneRelation"]
+        );
     }
 
     /**
@@ -66,7 +69,7 @@ class FieldType
      */
     public function isCollectionReferenceType(Data $fieldDefinition)
     {
-        return in_array($fieldDefinition->getFieldtype(), ["objects"]);
+        return in_array($fieldDefinition->getFieldtype(), ["objects", "manyToManyObjectRelation"]);
     }
 
     /**
@@ -113,16 +116,6 @@ class FieldType
             default:
                 return $this->getCustomType($fieldDefinition);
         }
-    }
-
-    /**
-     * @param Data $fieldDefinition
-     * @return bool
-     */
-    public function isScalarType(Data $fieldDefinition)
-    {
-        $typeName = $fieldDefinition->getPhpdocType();
-        return in_array($typeName, ["string","boolean","float","int"]);
     }
 
     /**
