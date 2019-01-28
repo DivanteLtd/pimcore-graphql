@@ -72,6 +72,20 @@ class FieldType
         return in_array($fieldDefinition->getFieldtype(), ["objects", "manyToManyObjectRelation"]);
     }
 
+    public function isScalarType(Data $fieldDefinition)
+    {
+        $type = $fieldDefinition->getPhpdocType();
+        return in_array(
+            $type,
+            [
+                "string",
+                "boolean",
+                "float",
+                "in"
+            ]
+        );
+    }
+
     /**
      * @param Data $fieldDefinition
      * @return mixed
