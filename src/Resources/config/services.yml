@@ -16,14 +16,15 @@ services:
         public: true
         tags: ['controller.service_arguments']
 
-    Divante\GraphQlBundle\Data\:
-        resource: '../../Data'
-    Divante\GraphQlBundle\Type\:
-        resource: '../../Type'
-
-# add more services, or override services that need manual wiring
-#    Divante\GraphQlBundle\ExampleClass:
-#        arguments:
-#            - "@service_id"
-#            - "plain_value"
-#            - "%parameter%"
+    Divante\GraphQlBundle\DataManagement\Query:
+        resource: '../../DataManagement/Query'
+    Divante\GraphQlBundle\TypeFactory\:
+        resource: '../../TypeFactory'
+    Divante\GraphQlBundle\TypeFactory\Classificationstore:
+        resource: '../../TypeFactory/Classificationstore'
+        tags: ['graphql.custom.type']
+    Divante\GraphQlBundle\TypeFactory\Basic:
+        resource: '../../TypeFactory/Basic'
+        calls:
+            - method: setCustomTypes
+              arguments: [!tagged graphql.custom.type]

@@ -1,52 +1,52 @@
 <?php
 /**
  * @category    pimcore5-graphQl
- * @date        30/05/2018 08:48
+ * @date        14/02/2019 08:48
  * @author      Kamil Janik <kjanik@divante.co>
  */
 
-namespace Divante\GraphQlBundle\Type;
+namespace Divante\GraphQlBundle\Builder;
 
+use Divante\GraphQlBundle\DataManagement;
+use Divante\GraphQlBundle\TypeFactory\Basic;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\ObjectType;
-use Divante\GraphQlBundle\Data\Provider;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Tool;
 
 /**
- * Class Factory
- * @package Divante\GraphQlBundle\Type
+ * Class Query
  */
-class Factory
+class Query
 {
     /**
      * @var \stdClass
      */
     private $typeList;
     /**
-     * @var Provider
+     * @var DataManagement\Query\Basic
      */
     private $dataProvider;
     /**
-     * @var FieldType
+     * @var Basic
      */
-    private $fieldTypeMapper;
+    private $fieldFactory;
 
     /**
-     * @param FieldType $fieldTypeMapper
+     * @param Basic $fieldFactory
      * @required
      */
-    public function setFieldTypeMapper(FieldType $fieldTypeMapper)
+    public function setFieldFactory(Basic $fieldFactory)
     {
-        $this->fieldTypeMapper = $fieldTypeMapper;
+        $this->fieldFactory = $fieldFactory;
     }
 
     /**
-     * @param Provider $dataProvider
+     * @param DataManagement\Query\Basic $dataProvider
      * @required
      */
-    public function setDataProvider(Provider $dataProvider)
+    public function setDataProvider(DataManagement\Query\Basic $dataProvider)
     {
         $this->dataProvider = $dataProvider;
     }
@@ -62,7 +62,7 @@ class Factory
     /**
      * @return ObjectType
      */
-    public function getQueryType()
+    public function getSchema()
     {
         return new ObjectType([
             'name' => 'Query',
@@ -116,11 +116,11 @@ class Factory
                 if ($item->getName() == "localizedfields") {
                     foreach ($item->getChilds() as $child) {
                         if ($child instanceof  ClassDefinition\Data) {
-                            $result[$child->getName()] = $this->fieldTypeMapper->getSimpleType($child);
+                            $result[$child->getName()] = $this->fieldFactory->getSimpleType($child);
                         }
                     }
-                } elseif ($this->fieldTypeMapper->isScalarType($item)) {
-                    $result[$item->getName()] = $this->fieldTypeMapper->getSimpleType($item);
+                } elseif ($this->fieldFactory->isScalarType($item)) {
+                    $result[$item->getName()] = $this->fieldFactory->getSimpleType($item);
                 }
             }
         }
@@ -193,10 +193,10 @@ class Factory
      */
     private function getFieldType(ClassDefinition\Data $fieldDefinition)
     {
-        if ($this->fieldTypeMapper->isReferenceType($fieldDefinition)) {
+        if ($this->fieldFactory->isReferenceType($fieldDefinition)) {
             return $this->getReferencedType($fieldDefinition);
         } else {
-            return $this->fieldTypeMapper->getSimpleType($fieldDefinition);
+            return $this->fieldFactory->getSimpleType($fieldDefinition);
         }
     }
 
@@ -208,11 +208,11 @@ class Factory
     {
         //file_put_contents("/var/www/var/logs/mylog.log", print_r($fieldDefinition, true), FILE_APPEND);
 
-        if ($this->fieldTypeMapper->isUnionType($fieldDefinition)) {
+        if ($this->fieldFactory->isUnionType($fieldDefinition)) {
             //todo unions
             return Type::int();
         } else {
-            $className = $this->fieldTypeMapper->getClassName($fieldDefinition);
+            $className = $this->fieldFactory->getClassName($fieldDefinition);
             if (!$className) {
                 //todo Assets, Documents
                 return Type::int();
@@ -224,7 +224,7 @@ class Factory
             }
         }
 
-        if ($this->fieldTypeMapper->isCollectionReferenceType($fieldDefinition)) {
+        if ($this->fieldFactory->isCollectionReferenceType($fieldDefinition)) {
             return [
                 'type' => Type::listOf($type),
                 'args' => $this->getFilters($className)
@@ -241,7 +241,7 @@ class Factory
     private function getLocalizedFieldType($fieldDefinition)
     {
         return [
-            "type" => $this->fieldTypeMapper->getSimpleType($fieldDefinition),
+            "type" => $this->fieldFactory->getSimpleType($fieldDefinition),
             'resolve' => function ($value, $args, $context, ResolveInfo $info) {
                 return $this->dataProvider->getResolveLocalizedFunction($value, $info->fieldName);
             }
