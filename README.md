@@ -20,7 +20,7 @@ This module is compatible with Pimcore 5.1.0 and higher. It requires PHP in vers
 
 ## Installing/Getting started
 For existing Pimcore instalations just run `composer require divanteltd/pimcore-graphql`
-If You dont have Pimore instance, pleas use one of many docker images like [this](https://github.com/dpfaffenbauer/pimcore-docker-compose), follow the instructions, after successfull instalation ssh to container and run command form above.
+If You dont have Pimore instance, pleas use one of many docker images like [this](https://github.com/dpfaffenbauer/pimcore-docker-compose), follow the instructions, after successfull instalation ssh to container and run command from above.
 
 On Pimcore level - You need to create rest user, and generate API key, which will be used for graphql communication.
 
@@ -30,13 +30,15 @@ Set up default localisation for site, in System settings.
 
 ![](localization.png)
 
-For testing You can use tool like ChromeiQL, setup endpoint address `http://[your-host:your-port]/webservice/graphql/graph?apikey=[your-apikey]` and You are ready to go.
+For testing You can use tool like ChromeiQL, setup endpoint address 
+`http://[your-host:your-port]/webservice/graphql/graph?apikey=[your-apikey]` 
+and You are ready to go.
 
 ![](endpoint.png)
 
 Now You are ready to model Your data
 
-###Create the Class Model/Definition
+### Create the Class Model/Definition
 
 Go to: Settings -> Object -> Classes and click the button Add Class.
 
@@ -60,7 +62,7 @@ If everything goes well, the new class looks like in the picture:
 
 Important: Every generated class in the Pimcore admin panel has also an accordingly PHP class with getters and setters. You can find the PHP class representation of our newly created class definition above in var/classes/DataObject/Product.php
 
-###Add a new Object
+### Add a new Object
 We've just prepared a simple class for new products. Now we can use it to create objects in Pimcore.
 
 * Open the objects section on the left and click on the right button after Home (Note that you can create also directories structure for objects).
