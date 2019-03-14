@@ -7,10 +7,10 @@
 
 namespace Divante\GraphQlBundle\Controller;
 
+use Divante\GraphQlBundle\Builder\Query;
 use GraphQL\Error\Debug;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Divante\GraphQlBundle\Type\Factory;
 use Pimcore\Bundle\AdminBundle\Controller\Rest\Element\AbstractElementController;
 use Pimcore\Bundle\AdminBundle\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,13 +27,13 @@ class GraphQlController extends AbstractElementController
      * @Method({"POST", "PUT"})
      * @Route("/graph")
      * @param Request $request
-     * @param Factory $typeFactory
+     * @param Query $builder
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function graphQlAction(Request $request, Factory $typeFactory)
+    public function graphQlAction(Request $request, Query $builder)
     {
         try {
-            $queryType = $typeFactory->getQueryType();
+            $queryType = $builder->getSchema();
             $schema = new Schema([
                 'query' => $queryType
             ]);
