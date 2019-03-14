@@ -155,7 +155,7 @@ class Basic
                     $result = $value->__toString();
                     if (!is_string($result)) {
                         $typeName = $fieldDefinition->getPhpdocType();
-                        $result = "Type $typeName require implementation, please check github documentation for details";
+                        $result = "Type $typeName require implementation, please check https://github.com/DivanteLtd/pimcore-graphql/tree/master#developing documentation for details";
                     }
                     return $result;
                 }
