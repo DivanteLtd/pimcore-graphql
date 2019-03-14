@@ -7,7 +7,7 @@ services:
         autoconfigure: true
         # this means you cannot fetch services directly from the container via $container->get()
         # if you need to do this, you can override this setting on individual services
-        public: false
+        public: true
 
     # controllers are imported separately to make sure they're public
     # and have a tag that allows actions to type-hint services
@@ -16,15 +16,13 @@ services:
         public: true
         tags: ['controller.service_arguments']
 
-    Divante\GraphQlBundle\DataManagement\Query:
+    Divante\GraphQlBundle\Builder\:
+        resource: '../../Builder'
+    Divante\GraphQlBundle\DataManagement\Query\:
         resource: '../../DataManagement/Query'
-    Divante\GraphQlBundle\TypeFactory\:
-        resource: '../../TypeFactory'
     Divante\GraphQlBundle\TypeFactory\Classificationstore:
-        resource: '../../TypeFactory/Classificationstore'
         tags: ['graphql.custom.type']
     Divante\GraphQlBundle\TypeFactory\Basic:
-        resource: '../../TypeFactory/Basic'
         calls:
             - method: setCustomTypes
               arguments: [!tagged graphql.custom.type]

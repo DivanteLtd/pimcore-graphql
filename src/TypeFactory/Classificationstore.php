@@ -32,7 +32,7 @@ class Classificationstore implements ICustomTypeFactory
     private $typeList = [];
 
     /**
-     * @param DataManagement\Query\Basic $dataProvider
+     * @param DataManagement\Query\Classificationstore $dataProvider
      * @required
      */
     public function setDataProvider(DataManagement\Query\Classificationstore $dataProvider)

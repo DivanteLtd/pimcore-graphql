@@ -12,7 +12,6 @@ use GraphQL\Type\Definition\ResolveInfo;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\ObjectType;
-
 /**
  * Class Basic
  */
@@ -24,6 +23,11 @@ class Basic
     private $dataProvider;
 
     private $customTypeColl = [];
+
+    /**
+     * @var array
+     */
+    private $typeList = [];
 
     /**
      * @param iterable $customTypeColl
@@ -122,10 +126,17 @@ class Basic
         }
     }
 
+    public function isScalarType(Data $fieldDefinition)
+    {
+        return in_array(
+            $fieldDefinition->getPhpdocType(),
+            ["string", "boolean", "array", "float", "int"]
+        );
+    }
+
     /**
      * @param Data $fieldDefinition
      * @return mixed
-     * @throws \MissingTypeException
      */
     private function getCustomType(Data $fieldDefinition)
     {
@@ -134,7 +145,24 @@ class Basic
                 return $customType->getCustomType();
             }
         }
-
-        throw new \MissingTypeException($fieldDefinition->getPhpdocType());
+        if (!(($this->typeList[$fieldDefinition->getPhpdocType()] ?? null) instanceof  ObjectType)) {
+            $this->typeList[$fieldDefinition->getPhpdocType()] = new ObjectType([
+                'name' => $fieldDefinition->getName(),
+                'fields' => [
+                    'value' => Type::string()
+                ],
+                'resolveField' => function ($value, $args, $context, ResolveInfo $info) use ($fieldDefinition) {
+                    $result = $value->__toString();
+                    if (!is_string($result)) {
+                        $typeName = $fieldDefinition->getPhpdocType();
+                        $result = "Type $typeName require implementation, please check github documentation for details";
+                    }
+                    return $result;
+                }
+            ]);
+        }
+        return $this->typeList[$fieldDefinition->getPhpdocType()];
     }
+
+
 }

@@ -44,15 +44,6 @@ class GraphQlController extends AbstractElementController
             $result = GraphQL::executeQuery($schema, $query, null, null, $variableValues);
             $output = $result->toArray();
 
-        } catch(\MissingTypeException $e) {
-
-            $output = [
-                'errors' => [
-                    [
-                        'message' => "There is no Type implemented for : " . $e->getMessage() . " please, check ...",
-                    ]
-                ]
-            ];
         } catch (\Throwable $e) {
             $output = [
                 'errors' => [
