@@ -8,11 +8,10 @@ You can model Your data with simple, point and click/ drag and drop, interface, 
 	- [Compatibility](#compatibility)
 	- [Installing/Getting started](#installinggetting-started)
 	- [Developing](#developing)
-	- [Configuration](#)
-	- [Contributing](#)
-	- [Licensing](#)
-	- [Standards & Code Quality](#)
-	- [About Authors](#)
+	- [Contributing](#contributing)
+	- [Licensing](#licensing)
+	- [Standards & Code Quality](#standards--code-quality)
+	- [About Authors](#a-nameauthorsaabout-authors)
 
 ## Compatibility
 This module is compatible with Pimcore 5.1.0 and higher. It requires PHP in version 7.0 or higher.
