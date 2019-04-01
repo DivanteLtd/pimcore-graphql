@@ -40,15 +40,19 @@ class Classificationstore implements ICustomTypeFactory
         $this->dataProvider = $dataProvider;
     }
 
+    /**
+     * @param string $type
+     * @return bool
+     */
     public function supports(string $type) : bool
     {
         return self::SUPPORTED_TYPE == $type;
     }
 
     /**
-     * @return mixed
+     * @return ObjectType
      */
-    public function getCustomType() : ObjectType
+    public function getCustomType(Data $definition) : ObjectType
     {
         if (!(($this->typeList['classificationstore'] ?? null) instanceof  ObjectType)) {
             $this->typeList['classificationstore'] = new ObjectType([

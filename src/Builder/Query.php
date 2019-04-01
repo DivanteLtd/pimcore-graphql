@@ -32,7 +32,6 @@ class Query
      * @var Basic
      */
     private $fieldFactory;
-
     /**
      * @param Basic $fieldFactory
      * @required
@@ -49,6 +48,14 @@ class Query
     public function setDataProvider(DataManagement\Query\Basic $dataProvider)
     {
         $this->dataProvider = $dataProvider;
+    }
+
+    /**
+     * @return DataManagement\Query\Basic
+     */
+    public function getDataProvider(): DataManagement\Query\Basic
+    {
+        return $this->dataProvider;
     }
 
     /**
@@ -176,7 +183,7 @@ class Query
      * @param $item
      * @param array $def
      */
-    private function parseLocalizedfields($item, &$def)
+    public function parseLocalizedfields($item, &$def)
     {
         foreach ($item->getChilds() as $child) {
             if (!$child instanceof  ClassDefinition\Data) {
@@ -191,7 +198,7 @@ class Query
      * @param ClassDefinition\Data $fieldDefinition
      * @return array|\GraphQL\Type\Definition\IntType|\GraphQL\Type\Definition\ListOfType|mixed
      */
-    private function getFieldType(ClassDefinition\Data $fieldDefinition)
+    public function getFieldType(ClassDefinition\Data $fieldDefinition)
     {
         if ($this->fieldFactory->isReferenceType($fieldDefinition)) {
             return $this->getReferencedType($fieldDefinition);

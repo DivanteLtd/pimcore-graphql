@@ -22,6 +22,8 @@ services:
         resource: '../../DataManagement/Query'
     Divante\GraphQlBundle\TypeFactory\Classificationstore:
         tags: ['graphql.custom.type']
+    Divante\GraphQlBundle\TypeFactory\Objectbrick:
+        tags: ['graphql.custom.type']
     Divante\GraphQlBundle\TypeFactory\Basic:
         calls:
             - method: setCustomTypes

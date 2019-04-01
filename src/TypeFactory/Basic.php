@@ -12,6 +12,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\ObjectType;
+
 /**
  * Class Basic
  */
@@ -142,9 +143,10 @@ class Basic
     {
         foreach ($this->customTypeColl as $customType) {
             if ($customType->supports($fieldDefinition->getPhpdocType())) {
-                return $customType->getCustomType();
+                return $customType->getCustomType($fieldDefinition);
             }
         }
+
         if (!(($this->typeList[$fieldDefinition->getPhpdocType()] ?? null) instanceof  ObjectType)) {
             $this->typeList[$fieldDefinition->getPhpdocType()] = new ObjectType([
                 'name' => $fieldDefinition->getName(),
@@ -152,8 +154,9 @@ class Basic
                     'value' => Type::string()
                 ],
                 'resolveField' => function ($value, $args, $context, ResolveInfo $info) use ($fieldDefinition) {
-                    $result = $value->__toString();
-                    if (!is_string($result)) {
+                    if (method_exists($value, "__toString")) {
+                        $result = $value->__toString();
+                    } else {
                         $typeName = $fieldDefinition->getPhpdocType();
                         $result = "Type $typeName require implementation, please check https://github.com/DivanteLtd/pimcore-graphql/tree/master#developing documentation for details";
                     }

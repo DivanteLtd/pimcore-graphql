@@ -95,6 +95,9 @@ class Basic
     public function getResolveFunction($object, $fieldName, $args = [])
     {
         $getter = "get" . ucfirst($fieldName);
+        if (!method_exists($object, $getter)) {
+           return null;
+        }
         $result = $object->$getter();
         $filter = function ($item) use ($args) {
             foreach ($args as $name => $value) {
@@ -128,6 +131,9 @@ class Basic
     public function getResolveLocalizedFunction($object, $fieldName)
     {
         $getter = "get" . ucfirst($fieldName);
+        if (!method_exists($object, $getter)) {
+            return null;
+        }
         return $object->$getter($this->currentLanguage);
     }
 }

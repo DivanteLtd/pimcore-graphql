@@ -42,7 +42,7 @@ class GraphQlController extends AbstractElementController
 
             $variableValues = $input['variables'] ?? null;
             $result = GraphQL::executeQuery($schema, $query, null, null, $variableValues);
-            $output = $result->toArray();
+            $output = $result->toArray(true);
 
         } catch (\Throwable $e) {
             $output = [
