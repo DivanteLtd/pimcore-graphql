@@ -114,7 +114,7 @@ class Query
         if ($definition instanceof ClassDefinition) {
             foreach ($definition->getFieldDefinitions() as $item) {
                 if ($item->getName() == "localizedfields") {
-                    foreach ($item->getChilds() as $child) {
+                    foreach ($item->getFieldDefinitions() as $child) {
                         if ($child instanceof  ClassDefinition\Data) {
                             $result[$child->getName()] = $this->fieldFactory->getSimpleType($child);
                         }
@@ -178,7 +178,7 @@ class Query
      */
     private function parseLocalizedfields($item, &$def)
     {
-        foreach ($item->getChilds() as $child) {
+        foreach ($item->getFieldDefinitions() as $child) {
             if (!$child instanceof  ClassDefinition\Data) {
                 $this->parseLocalizedfields($child, $def);
             } else {
