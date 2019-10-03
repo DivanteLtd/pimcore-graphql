@@ -97,9 +97,9 @@ class Objectbrick implements ICustomTypeFactory
     }
 
     /**
-     * @return ObjectType
+     * @return Type
      */
-    public function getCustomType(Data $definition) : ObjectType
+    public function getCustomType(Data $definition) : Type
     {
         $this->init();
         if (!(($this->typeList->{'objectbrick'} ?? null) instanceof ObjectType)) {

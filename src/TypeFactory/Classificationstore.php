@@ -50,9 +50,9 @@ class Classificationstore implements ICustomTypeFactory
     }
 
     /**
-     * @return ObjectType
+     * @return Type
      */
-    public function getCustomType(Data $definition) : ObjectType
+    public function getCustomType(Data $definition) : Type
     {
         if (!(($this->typeList['classificationstore'] ?? null) instanceof  ObjectType)) {
             $this->typeList['classificationstore'] = new ObjectType([

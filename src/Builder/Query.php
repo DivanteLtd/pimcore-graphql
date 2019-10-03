@@ -14,6 +14,7 @@ use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\ObjectType;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Tool;
+use Symfony\Component\DependencyInjection\Tests\Compiler\PriorityTaggedServiceTraitImplementation;
 
 /**
  * Class Query
@@ -32,6 +33,7 @@ class Query
      * @var Basic
      */
     private $fieldFactory;
+
     /**
      * @param Basic $fieldFactory
      * @required
@@ -119,20 +121,43 @@ class Query
         $result = [];
         $definition = ClassDefinition::getByName($className);
         if ($definition instanceof ClassDefinition) {
-            foreach ($definition->getFieldDefinitions() as $item) {
-                if ($item->getName() == "localizedfields") {
-                    foreach ($item->getFieldDefinitions() as $child) {
-                        if ($child instanceof  ClassDefinition\Data) {
-                            $result[$child->getName()] = $this->fieldFactory->getSimpleType($child);
-                        }
-                    }
-                } elseif ($this->fieldFactory->isScalarType($item)) {
-                    $result[$item->getName()] = $this->fieldFactory->getSimpleType($item);
-                }
+            $layouts = $definition->getLayoutDefinitions();
+            if ($layouts && !is_array($layouts)) {
+                $layouts = [$layouts];
+            }
+            $collection = array_reduce(
+                $layouts ?? [],
+                function ($carry, $item) {
+                    $carry = array_merge($carry, $this->getFieldDefinitionsRecursive($item));
+                    return $carry;
+                }, []
+            );
+
+            foreach ($collection as $item) {
+                $result[$item->getName()] = $this->fieldFactory->getFilers($item);
             }
         }
 
         return $result;
+    }
+
+    /**
+     * @param $definitions
+     * @return mixed
+     */
+    private function getFieldDefinitionsRecursive($definitions)
+    {
+        return array_reduce(
+            $definitions->getChilds(),
+            function ($carry, $item) {
+                if ($item instanceof ClassDefinition\Layout || $item instanceof ClassDefinition\Data\Localizedfields) {
+                    $carry = array_merge($carry, $this->getFieldDefinitionsRecursive($item));
+                } elseif ($item instanceof ClassDefinition\Data) {
+                    $carry = array_merge($carry, [$item]);
+                }
+                return $carry;
+            }, []
+        );
     }
 
     /**
@@ -167,11 +192,37 @@ class Query
     private function getFieldsDefinition(string $className)
     {
         $definition = ClassDefinition::getByName($className);
-        $def["id"] = Type::int();
-        foreach ($definition->getFieldDefinitions() as $item) {
-            if ($item->getName() == "localizedfields") {
-                $this->parseLocalizedfields($item, $def);
-            } else {
+        if ($definition instanceof ClassDefinition) {
+            $layouts = $definition->getLayoutDefinitions();
+            if ($layouts && !is_array($layouts)) {
+                $layouts = [$layouts];
+            }
+            $collection = array_reduce(
+                $layouts ?? [],
+                function ($carry, $item) {
+                    $carry = array_merge($carry, $this->getFieldDefinitionsRecursive($item));
+                    return $carry;
+                }, []
+            );
+            $def["id"] = Type::int();
+            $def["key"] = Type::string();
+            $def["modificationDate"] = $this->typeList->modificationDate = $this->typeList->modificationDate ?? new ObjectType([
+                'name' => "modificationDate",
+                'fields' => [
+                    'timestamp' => [
+                        'type' => Type::float(),
+                        'resolve' => function ($val) {
+                            return $val;
+                        }
+                    ],'dateTime' => [
+                        'type' => Type::string(),
+                        'resolve' => function ($val) {
+                            return  gmdate("Y-m-d\TH:i:s\Z", $val);
+                        }
+                    ],
+                ]
+            ]);
+            foreach ($collection as $item) {
                 $def[$item->getName()] = $this->getFieldType($item);
             }
         }
@@ -185,8 +236,8 @@ class Query
      */
     public function parseLocalizedfields($item, &$def)
     {
-        foreach ($item->getFieldDefinitions() as $child) {
-            if (!$child instanceof  ClassDefinition\Data) {
+        foreach ($item->getChilds() as $child) {
+            if (!$child instanceof ClassDefinition\Data) {
                 $this->parseLocalizedfields($child, $def);
             } else {
                 $def[$child->getName()] = $this->getLocalizedFieldType($child);
@@ -213,8 +264,6 @@ class Query
      */
     private function getReferencedType(ClassDefinition\Data $fieldDefinition)
     {
-        //file_put_contents("/var/www/var/logs/mylog.log", print_r($fieldDefinition, true), FILE_APPEND);
-
         if ($this->fieldFactory->isUnionType($fieldDefinition)) {
             //todo unions
             return Type::int();

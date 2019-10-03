@@ -106,6 +106,52 @@ class Basic
      */
     public function getSimpleType(Data $fieldDefinition)
     {
+        foreach ($this->customTypeColl as $customType) {
+            if ($customType->supports($fieldDefinition->getFieldtype())) {
+                return $customType->getCustomType($fieldDefinition);
+            }
+        }
+
+        switch ($fieldDefinition->getPhpdocType()) {
+            case "string":
+                return Type::string();
+                break;
+            case "boolean":
+                return Type::boolean();
+                break;
+            case "array":
+                return Type::listOf($this->getCustomType($fieldDefinition));
+                break;
+            case "float":
+                return Type::float();
+                break;
+            case "int":
+                return Type::int();
+                break;
+            default:
+                if (!(($this->typeList[$fieldDefinition->getFieldtype()] ?? null) instanceof  ObjectType)) {
+                    $this->typeList[$fieldDefinition->getFieldtype()] = new ObjectType([
+                        'name' => $fieldDefinition->getName(),
+                        'fields' => [
+                            'value' => Type::string()
+                        ],
+                        'resolveField' => function ($value, $args, $context, ResolveInfo $info) use ($fieldDefinition) {
+                            if (method_exists($value, "__toString")) {
+                                $result = $value->__toString();
+                            } else {
+                                $typeName = $fieldDefinition->getFieldtype();
+                                $result = "Type $typeName require implementation, please check https://github.com/DivanteLtd/pimcore-graphql/tree/master#developing documentation for details";
+                            }
+                            return $result;
+                        }
+                    ]);
+                }
+                return $this->typeList[$fieldDefinition->getFieldtype()];
+        }
+    }
+
+    public function getFilers(Data $fieldDefinition)
+    {
         switch ($fieldDefinition->getPhpdocType()) {
             case "string":
                 return Type::string();
@@ -123,15 +169,17 @@ class Basic
                 return Type::int();
                 break;
             default:
-                return $this->getCustomType($fieldDefinition);
+                return Type::string();
+                break;
         }
+
     }
 
     public function isScalarType(Data $fieldDefinition)
     {
         return in_array(
             $fieldDefinition->getPhpdocType(),
-            ["string", "boolean", "array", "float", "int"]
+            ["string", "boolean", "float", "int"]
         );
     }
 
@@ -139,16 +187,16 @@ class Basic
      * @param Data $fieldDefinition
      * @return mixed
      */
-    private function getCustomType(Data $fieldDefinition)
+    public function getCustomType(Data $fieldDefinition)
     {
         foreach ($this->customTypeColl as $customType) {
-            if ($customType->supports($fieldDefinition->getPhpdocType())) {
+            if ($customType->supports($fieldDefinition->getFieldtype())) {
                 return $customType->getCustomType($fieldDefinition);
             }
         }
 
-        if (!(($this->typeList[$fieldDefinition->getPhpdocType()] ?? null) instanceof  ObjectType)) {
-            $this->typeList[$fieldDefinition->getPhpdocType()] = new ObjectType([
+        if (!(($this->typeList[$fieldDefinition->getFieldtype()] ?? null) instanceof  ObjectType)) {
+            $this->typeList[$fieldDefinition->getFieldtype()] = new ObjectType([
                 'name' => $fieldDefinition->getName(),
                 'fields' => [
                     'value' => Type::string()
@@ -157,14 +205,14 @@ class Basic
                     if (method_exists($value, "__toString")) {
                         $result = $value->__toString();
                     } else {
-                        $typeName = $fieldDefinition->getPhpdocType();
+                        $typeName = $fieldDefinition->getFieldtype();
                         $result = "Type $typeName require implementation, please check https://github.com/DivanteLtd/pimcore-graphql/tree/master#developing documentation for details";
                     }
                     return $result;
                 }
             ]);
         }
-        return $this->typeList[$fieldDefinition->getPhpdocType()];
+        return $this->typeList[$fieldDefinition->getFieldtype()];
     }
 
 
