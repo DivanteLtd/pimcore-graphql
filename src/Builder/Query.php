@@ -9,9 +9,11 @@ namespace Divante\GraphQlBundle\Builder;
 
 use Divante\GraphQlBundle\DataManagement;
 use Divante\GraphQlBundle\TypeFactory\Basic;
+use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\UnionType;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Tool;
 use Symfony\Component\DependencyInjection\Tests\Compiler\PriorityTaggedServiceTraitImplementation;
@@ -66,6 +68,29 @@ class Query
     public function __construct()
     {
         $this->typeList = new \stdClass();
+        $this->typeList->arithmeticFilter =  new InputObjectType([
+            'name' => 'arithmeticFilter',
+            'fields' => [
+                'eq' => [
+                    'type' => Type::float(),
+                ],
+                'neq' => [
+                    'type' => Type::float(),
+                ],
+                'gt' => [
+                    'type' => Type::float(),
+                ],
+                'gte' => [
+                    'type' => Type::float(),
+                ],
+                'lt' => [
+                    'type' => Type::float(),
+                ],
+                'lte' => [
+                    'type' => Type::float(),
+                ]
+            ]
+        ]);
     }
 
     /**
@@ -87,15 +112,21 @@ class Query
                                     'type' => Type::string(),
                                     'defaultValue' => Tool::getDefaultLanguage()
                                 ],
-                                'unpublished' => [
+                                'o_published' => [
                                     'type' => Type::boolean(),
-                                    'defaultValue' => false
+                                    'defaultValue' => true
                                 ],
                                 'limit' => [
                                     'type' => Type::int()
                                 ],
                                 'offset' => [
                                     'type' => Type::int()
+                                ],
+                                'o_modificationDate' => [
+                                    'type' => $this->typeList->arithmeticFilter
+                                ],
+                                'o_creationDate' => [
+                                    'type' => $this->typeList->arithmeticFilter
                                 ]
                             ])
                         ];
@@ -106,7 +137,6 @@ class Query
             ),
             'resolveField' => function ($val, $args, $context, ResolveInfo $info) {
                 $this->dataProvider->setCurrentLanguage($args["language"]);
-                $this->dataProvider->setUnpublished($args["unpublished"]);
                 return $this->dataProvider->getDataObject($info->fieldName, $args);
             }
         ]);
@@ -204,10 +234,25 @@ class Query
                     return $carry;
                 }, []
             );
-            $def["id"] = Type::int();
-            $def["key"] = Type::string();
-            $def["modificationDate"] = $this->typeList->modificationDate = $this->typeList->modificationDate ?? new ObjectType([
-                'name' => "modificationDate",
+            $def = [];
+            $this->addSystemFields($def);
+            foreach ($collection as $item) {
+                $def[$item->getName()] = $this->getFieldType($item);
+            }
+        }
+
+        return $def;
+    }
+
+    /**
+     * @param array $def
+     */
+    private function addSystemFields(array &$def)
+    {
+        $def["id"] = Type::int();
+        $def["key"] = Type::string();
+        $def["o_modificationDate"] = $this->typeList->modificationDate = $this->typeList->modificationDate ?? new ObjectType([
+                'name' => "o_modificationDate",
                 'fields' => [
                     'timestamp' => [
                         'type' => Type::float(),
@@ -222,12 +267,23 @@ class Query
                     ],
                 ]
             ]);
-            foreach ($collection as $item) {
-                $def[$item->getName()] = $this->getFieldType($item);
-            }
-        }
-
-        return $def;
+        $def["o_creationDate"] = $this->typeList->creationDate = $this->typeList->creationDate ?? new ObjectType([
+                'name' => "o_creationDate",
+                'fields' => [
+                    'timestamp' => [
+                        'type' => Type::float(),
+                        'resolve' => function ($val) {
+                            return $val;
+                        }
+                    ],'dateTime' => [
+                        'type' => Type::string(),
+                        'resolve' => function ($val) {
+                            return  gmdate("Y-m-d\TH:i:s\Z", $val);
+                        }
+                    ],
+                ]
+            ]);
+        $def['o_published'] = Type::int();
     }
 
     /**

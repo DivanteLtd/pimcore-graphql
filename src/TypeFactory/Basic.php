@@ -214,6 +214,4 @@ class Basic
         }
         return $this->typeList[$fieldDefinition->getFieldtype()];
     }
-
-
 }

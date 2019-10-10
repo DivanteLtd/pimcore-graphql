@@ -8,6 +8,7 @@
 namespace Divante\GraphQlBundle\DataManagement\Query;
 
 use Pimcore\Db;
+use Pimcore\Model\DataObject\AbstractObject;
 
 /**
  * Class Basic
@@ -20,19 +21,6 @@ class Basic
      * @var string
      */
     private $currentLanguage;
-
-    /**
-     * @var bool
-     */
-    private $unpublished;
-
-    /**
-     * @param bool $unpublished
-     */
-    public function setUnpublished(bool $unpublished)
-    {
-        $this->unpublished = $unpublished;
-    }
 
     /**
      * @param string $currentLanguage
@@ -64,13 +52,15 @@ class Basic
     {
         $name = self::DATA_OBJECT_NAMESPACE . ucfirst($className);
         if (!isset($args["id"])) {
-            $name = $name. "\\Listing";
+            $name = $name . "\\Listing";
             $list = new $name();
-            $list->setUnpublished($this->unpublished);
+            $list->setLocale($args['language']);
+            $list->addConditionParam("o_published = ?", !$args['o_published'] ?? true);
+            $list->setObjectTypes([AbstractObject::OBJECT_TYPE_VARIANT, AbstractObject::OBJECT_TYPE_OBJECT]);
 
             foreach ($args as $name => $value) {
                 if (!in_array($name, ['id', 'offset', 'limit', 'language', 'unpublished'])) {
-                    $list->addConditionParam($name . " = ?", $value);
+                    $this->addFilter($name, $value, $list);
                 }
             }
 
@@ -85,6 +75,20 @@ class Basic
         $obj =  $name::getById($args["id"]);
 
         return [$obj];
+    }
+
+    public function addFilter($name, $arg, $list)
+    {
+        if (!is_array($arg)) {
+            $list->addConditionParam($name . " = ?", $arg);
+        } elseif (count(array_filter(array_keys($arg), 'is_string')) > 0) {
+            foreach ($arg as $operator => $value) {
+                $map = ['eq' => "=", 'neq' => "!=", 'gt' => ">", 'gte' => ">=", 'lt' => "<", 'lte' => "<="];
+                $list->addConditionParam($name . " " . $map[$operator] . " " . $value);
+            }
+        } else {
+            $list->addConditionParam($name . " like '%" . implode(",", $arg) . "%'");
+        }
     }
 
     /**
