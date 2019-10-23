@@ -26,15 +26,15 @@ class Query
     /**
      * @var \stdClass
      */
-    private $typeList;
+    protected $typeList;
     /**
      * @var DataManagement\Query\Basic
      */
-    private $dataProvider;
+    protected $dataProvider;
     /**
      * @var Basic
      */
-    private $fieldFactory;
+    protected $fieldFactory;
 
     /**
      * @param Basic $fieldFactory
@@ -146,7 +146,7 @@ class Query
      * @param string $className
      * @return array
      */
-    private function getFilters(string $className)
+    protected function getFilters(string $className)
     {
         $result = [];
         $definition = ClassDefinition::getByName($className);
@@ -175,7 +175,7 @@ class Query
      * @param $definitions
      * @return mixed
      */
-    private function getFieldDefinitionsRecursive($definitions)
+    protected function getFieldDefinitionsRecursive($definitions)
     {
         return array_reduce(
             $definitions->getChilds(),
@@ -194,7 +194,7 @@ class Query
      * @param string $className
      * @return mixed
      */
-    private function getConfig(string $className)
+    protected function getConfig(string $className)
     {
         $definition = ClassDefinition::getByName($className);
         $this->typeList->$className = true;
@@ -219,7 +219,7 @@ class Query
      * @param string $className
      * @return array
      */
-    private function getFieldsDefinition(string $className)
+    protected function getFieldsDefinition(string $className)
     {
         $definition = ClassDefinition::getByName($className);
         if ($definition instanceof ClassDefinition) {
@@ -247,7 +247,7 @@ class Query
     /**
      * @param array $def
      */
-    private function addSystemFields(array &$def)
+    protected function addSystemFields(array &$def)
     {
         $def["id"] = Type::int();
         $def["key"] = Type::string();
@@ -318,7 +318,7 @@ class Query
      * @param ClassDefinition\Data $fieldDefinition
      * @return array|\GraphQL\Type\Definition\ListOfType|mixed
      */
-    private function getReferencedType(ClassDefinition\Data $fieldDefinition)
+    protected function getReferencedType(ClassDefinition\Data $fieldDefinition)
     {
         if ($this->fieldFactory->isUnionType($fieldDefinition)) {
             //todo unions
@@ -350,7 +350,7 @@ class Query
      * @param ClassDefinition\Data $fieldDefinition
      * @return array
      */
-    private function getLocalizedFieldType($fieldDefinition)
+    protected function getLocalizedFieldType($fieldDefinition)
     {
         return [
             "type" => $this->fieldFactory->getSimpleType($fieldDefinition),
